@@ -10,7 +10,19 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   @override
+  void initState() {
+    WidgetsBinding.instance.addPostFrameCallback(
+      (timeStamp) async {
+        await HomeScreenController.getAllEmployees();
+        setState(() {});
+      },
+    );
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    print("heloooo");
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -19,11 +31,20 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: ListView.separated(
           itemBuilder: (context, index) => ListTile(
-                title: Text("Name"),
-                subtitle: Text("Designation"),
+                title:
+                    Text(HomeScreenController.employeeDataList[index]["name"]),
+                subtitle: Text(HomeScreenController.employeeDataList[index]
+                    ["designation"]),
+                trailing: IconButton(
+                    onPressed: () async {
+                      await HomeScreenController.removeEmployee(
+                          HomeScreenController.employeeDataList[index]["id"]);
+                      setState(() {});
+                    },
+                    icon: Icon(Icons.delete)),
               ),
           separatorBuilder: (context, index) => Divider(),
-          itemCount: 10),
+          itemCount: HomeScreenController.employeeDataList.length),
     );
   }
 
@@ -55,8 +76,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: Text("Cancel"))),
                 Expanded(
                     child: ElevatedButton(
-                        onPressed: () {
-                          HomeScreenController.addEmployee();
+                        onPressed: () async {
+                          await HomeScreenController.addEmployee(
+                              designation: desController.text,
+                              name: nameController.text);
+                          setState(() {});
                           Navigator.pop(context);
                         },
                         child: Text("Save")))
